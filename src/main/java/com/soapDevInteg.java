@@ -46,10 +46,24 @@ public class soapDevInteg implements soapDevIntegrations {
         return resValue;
     }
 
-    public String setUserDevice(String UID, String USER_DB_HOST) {
-        System.out.println("UID: " + UID);
-        System.out.println("USER_DB_HOST: " + USER_DB_HOST);
-        return "The device with the UID: " + UID + " was successfully added to the buffer";
+    public String setUserDevice(String UID, String userLogin, String userPassword) {
+
+        String setResultValue;
+        String userPasswordSha = requestExecutionMethods.sha256(userPassword);
+
+        if (requestExecutionMethods.fGetUserPassSha(userLogin).equals(userPasswordSha)) {
+
+            if (requestExecutionMethods.fisUIDExists(UID) == 1) {
+                requestExecutionMethods.updateSoldDeviceStatus(UID, userLogin);
+                setResultValue = "STATUS_CHANGED";
+            } else {
+                setResultValue = "DEVICE_NOT_FOUND";
+            }
+        } else {
+            setResultValue = "WRONG_LOGIN_PASSWORD";
+        }
+
+        return setResultValue;
     }
 }
 

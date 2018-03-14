@@ -46,24 +46,62 @@ public class soapDevInteg implements soapDevIntegrations {
         return resValue;
     }
 
-    public String setUserDevice(String UID, String userLogin, String userPassword) {
+    public String setUserDevice(String UID, String userLogin, String userPasswordSha) {
+        try {
 
-        String setResultValue;
-        String userPasswordSha = requestExecutionMethods.sha256(userPassword);
+            String setResultValue;
+            //String userPasswordSha = requestExecutionMethods.sha256(userPassword);
+            String dbPasswordSha = requestExecutionMethods.fGetUserPassSha(userLogin);
 
-        if (requestExecutionMethods.fGetUserPassSha(userLogin).equals(userPasswordSha)) {
-
-            if (requestExecutionMethods.fisUIDExists(UID) == 1) {
-                requestExecutionMethods.updateSoldDeviceStatus(UID, userLogin);
-                setResultValue = "STATUS_CHANGED";
+            if (dbPasswordSha != null) {
+                if (dbPasswordSha.equals(userPasswordSha)) {
+                    if (requestExecutionMethods.fisUIDExists(UID) == 1) {
+                        requestExecutionMethods.updateSoldDeviceStatus(UID, userLogin);
+                        setResultValue = "STATUS_CHANGED";
+                    } else {
+                        setResultValue = "DEVICE_NOT_FOUND";
+                    }
+                } else {
+                    setResultValue = "WRONG_LOGIN_PASSWORD";
+                }
             } else {
-                setResultValue = "DEVICE_NOT_FOUND";
+                setResultValue = "WRONG_LOGIN_PASSWORD";
             }
-        } else {
-            setResultValue = "WRONG_LOGIN_PASSWORD";
-        }
 
-        return setResultValue;
+            return setResultValue;
+        } catch (Exception e){
+            e.printStackTrace();
+            return "EXECUTION_ERROR";
+        }
+    }
+
+    public String checkUserDevice(String UID, String userLogin, String userPasswordSha) {
+
+        try {
+
+            String setResultValue;
+            String dbPasswordSha = requestExecutionMethods.fGetUserPassSha(userLogin);
+
+
+            if (dbPasswordSha != null) {
+                if (dbPasswordSha.equals(userPasswordSha)) {
+                    if (requestExecutionMethods.fisUIDExists(UID) == 1) {
+                        setResultValue = "DEVICE_EXISTS";
+                    } else {
+                        setResultValue = "DEVICE_NOT_FOUND";
+                    }
+                } else {
+                    setResultValue = "WRONG_LOGIN_PASSWORD";
+                }
+            } else {
+                setResultValue = "WRONG_LOGIN_PASSWORD";
+            }
+
+            return setResultValue;
+        } catch (Exception e){
+            e.printStackTrace();
+            return "EXECUTION_ERROR";
+        }
     }
 }
 

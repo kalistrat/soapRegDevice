@@ -108,12 +108,15 @@ public class requestExecutionMethods {
                     , PASS
             );
 
+
             CallableStatement Stmt = Con.prepareCall("{? = call fGetUserPassSha(?)}");
             Stmt.registerOutParameter (1, Types.VARCHAR);
             Stmt.setString(2, qUserLog);
             Stmt.execute();
             userPass = Stmt.getString(1);
             Con.close();
+
+            return userPass;
 
         }catch(SQLException se){
             //Handle errors for JDBC

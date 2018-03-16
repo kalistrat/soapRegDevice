@@ -15,35 +15,47 @@ public class soapDevInteg implements soapDevIntegrations {
 
 
     public String linkUserDevice(String UID_CHAIN) {
-        System.out.println("UID_CHAIN: " + UID_CHAIN);
-        String resValue;
-        MessageContext messageContext = webServiceContext.getMessageContext();
+        try {
 
-        Map<?,?> requestHeaders = (Map<?,?>) messageContext.get(MessageContext.HTTP_REQUEST_HEADERS);
-        List<?> usernameList = (List<?>) requestHeaders.get("username");
-        List<?> passwordList = (List<?>) requestHeaders.get("password");
+            String linkResultValue;
 
-        String username = "";
-        String password = "";
+            List<String> uidLilst = requestExecutionMethods.GetListFromString(UID_CHAIN,"|");
 
-        if (usernameList != null) {
-            username = usernameList.get(0).toString();
+            if (uidLilst.size()!=0) {
+                String notFoundDevices = "";
+                for (String iUID : uidLilst){
+                    if (requestExecutionMethods.fisUIDExists(iUID) == 0){
+                        notFoundDevices = notFoundDevices + iUID + ";";
+                    }
+                }
+                if (notFoundDevices.equals("")) {
+
+                    String bindingDeviceUID = uidLilst.get(uidLilst.size()-1);
+                    deviceArgs dArgs = requestExecutionMethods.getDeviceArgs(bindingDeviceUID);
+
+                    if (dArgs.devStatus.equals("AWAINTING")
+                            && dArgs.devWsURL != null
+                            && dArgs.userLog != null
+                            && dArgs.userPassSha != null
+                            ){
+                        linkResultValue = requestExecutionMethods.userWsLinkDevice(UID_CHAIN,dArgs);
+                    } else {
+                        linkResultValue = "DEVICE_"+bindingDeviceUID+"_IS_NOT_ADDED_TO_THE_PERSONAL_ACCOUNT";
+                    }
+
+                } else {
+                    linkResultValue = "NOT_FOUND_DEVICES: " + notFoundDevices;
+                }
+            } else {
+                linkResultValue = "CANT_PARSE_CHAIN";
+            }
+
+            return linkResultValue;
+        } catch (Exception e){
+            e.printStackTrace();
+            return "EXECUTION_ERROR";
         }
 
-        if (passwordList != null) {
-            password = passwordList.get(0).toString();
-        }
-
-        System.out.println("username : " + username);
-        System.out.println("password : " + password);
-
-        if (UID_CHAIN.equals("TEST_CHAIN")) {
-            resValue = "mqttLogin:qwerty1;mqttPassword:hfey67fe;mqttTopic:/SEN-002;";
-        } else {
-            resValue = "DEVICE_NOT_FOUND;";
-        }
-
-        return resValue;
     }
 
     public String setUserDevice(String UID, String userLogin, String userPasswordSha) {
@@ -56,8 +68,8 @@ public class soapDevInteg implements soapDevIntegrations {
             if (dbPasswordSha != null) {
                 if (dbPasswordSha.equals(userPasswordSha)) {
                     if (requestExecutionMethods.fisUIDExists(UID) == 1) {
-                        requestExecutionMethods.updateSoldDeviceStatus(UID, userLogin);
-                        setResultValue = "STATUS_CHANGED";
+                        requestExecutionMethods.updateSoldDeviceStatus(UID, userLogin, "AWAINTING");
+                        setResultValue = "DEVICE_" + UID + "_TRANSFERRED_TO_AWAINTING_STATE";
                     } else {
                         setResultValue = "DEVICE_NOT_FOUND";
                     }

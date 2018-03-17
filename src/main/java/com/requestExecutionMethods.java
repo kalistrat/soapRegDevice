@@ -131,8 +131,8 @@ public class requestExecutionMethods {
         return builder.parse(is);
     }
 
-    public static int fisUIDExists(String qUID){
-        int IsUIDExists = 0;
+    public static String getUIDStatus(String qUID){
+        String uidStatus = "";
 
         try {
 
@@ -143,11 +143,11 @@ public class requestExecutionMethods {
                     , PASS
             );
 
-            CallableStatement Stmt = Con.prepareCall("{? = call fisUIDExists(?)}");
-            Stmt.registerOutParameter (1, Types.INTEGER);
+            CallableStatement Stmt = Con.prepareCall("{? = call getUIDStatus(?)}");
+            Stmt.registerOutParameter (1, Types.VARCHAR);
             Stmt.setString(2, qUID);
             Stmt.execute();
-            IsUIDExists = Stmt.getInt(1);
+            uidStatus = Stmt.getString(1);
             Con.close();
 
         }catch(SQLException se){
@@ -158,7 +158,7 @@ public class requestExecutionMethods {
             e.printStackTrace();
         }
 
-        return IsUIDExists;
+        return uidStatus;
     }
 
     public static String fGetUserPassSha(String qUserLog){
@@ -275,7 +275,7 @@ public class requestExecutionMethods {
 
 
         } catch (Exception e){
-            //e.printStackTrace();
+            e.printStackTrace();
 
         }
         return respWs;

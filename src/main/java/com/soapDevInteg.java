@@ -24,7 +24,7 @@ public class soapDevInteg implements soapDevIntegrations {
             if (uidLilst.size()!=0) {
                 String notFoundDevices = "";
                 for (String iUID : uidLilst){
-                    if (requestExecutionMethods.fisUIDExists(iUID) == 0){
+                    if (requestExecutionMethods.getUIDStatus(iUID).equals("")){
                         notFoundDevices = notFoundDevices + iUID + ";";
                     }
                 }
@@ -39,8 +39,15 @@ public class soapDevInteg implements soapDevIntegrations {
                             && dArgs.userPassSha != null
                             ){
                         linkResultValue = requestExecutionMethods.userWsLinkDevice(UID_CHAIN,dArgs);
+                        //System.out.println("linkResultValue from userWs: " + linkResultValue);
+                        if (!linkResultValue.contains("ERROR")) {
+                            //System.out.println("go to connected");
+                            requestExecutionMethods.updateSoldDeviceStatus(bindingDeviceUID, dArgs.userLog, "CONNECTED");
+                        }
+                    } else if (dArgs.devStatus.equals("CONNECTED")){
+                        linkResultValue = "DEVICE_"+bindingDeviceUID+"_IS_ALREADY_IN_USE";
                     } else {
-                        linkResultValue = "DEVICE_"+bindingDeviceUID+"_IS_NOT_ADDED_TO_THE_PERSONAL_ACCOUNT";
+                        linkResultValue = "DEVICE_"+bindingDeviceUID+"_NOT_IN_PERSONAL_ACCOUNT";
                     }
 
                 } else {
@@ -58,7 +65,7 @@ public class soapDevInteg implements soapDevIntegrations {
 
     }
 
-    public String setUserDevice(String UID, String userLogin, String userPasswordSha) {
+    public String setUserDevice(String UID, String userLogin, String userPasswordSha, String reqStatus) {
         try {
 
             String setResultValue;
@@ -67,11 +74,25 @@ public class soapDevInteg implements soapDevIntegrations {
 
             if (dbPasswordSha != null) {
                 if (dbPasswordSha.equals(userPasswordSha)) {
-                    if (requestExecutionMethods.fisUIDExists(UID) == 1) {
+                    // check login and device owner's login
+                    String uidStatus = requestExecutionMethods.getUIDStatus(UID);
+                    if (uidStatus.equals("OUTSIDE") && reqStatus.equals("AWAINTING")) {
+
                         requestExecutionMethods.updateSoldDeviceStatus(UID, userLogin, "AWAINTING");
-                        setResultValue = "DEVICE_" + UID + "_TRANSFERRED_TO_AWAINTING_STATE";
+                        setResultValue = "DEVICE_TRANSFERRED_TO_AWAITING_STATUS";
+
+                    } else if(uidStatus.equals("CONNECTED")&& reqStatus.equals("OUTSIDE")) {
+
+                        requestExecutionMethods.updateSoldDeviceStatus(UID, userLogin, "OUTSIDE");
+                        setResultValue = "DEVICE_TRANSFERRED_TO_OUTSIDE_STATUS";
+
+                    } else if(uidStatus.equals("AWAINTING")&& reqStatus.equals("OUTSIDE")) {
+
+                        requestExecutionMethods.updateSoldDeviceStatus(UID, userLogin, "OUTSIDE");
+                        setResultValue = "DEVICE_TRANSFERRED_TO_OUTSIDE_STATUS";
+
                     } else {
-                        setResultValue = "DEVICE_NOT_FOUND";
+                        setResultValue = "WRONG_DEVICE_TRANSITION";
                     }
                 } else {
                     setResultValue = "WRONG_LOGIN_PASSWORD";
@@ -97,8 +118,13 @@ public class soapDevInteg implements soapDevIntegrations {
 
             if (dbPasswordSha != null) {
                 if (dbPasswordSha.equals(userPasswordSha)) {
-                    if (requestExecutionMethods.fisUIDExists(UID) == 1) {
-                        setResultValue = "DEVICE_EXISTS";
+                    String uidStatus = requestExecutionMethods.getUIDStatus(UID);
+                    if (uidStatus.equals("OUTSIDE")) {
+                        setResultValue = "DEVICE_EXISTS_AND_OUTSIDE";
+                    } else if(uidStatus.equals("AWAINTING")) {
+                        setResultValue = "DEVICE_EXISTS_AND_WAITING";
+                    } else if(uidStatus.equals("CONNECTED")) {
+                        setResultValue = "DEVICE_EXISTS_AND_CONNECTED";
                     } else {
                         setResultValue = "DEVICE_NOT_FOUND";
                     }

@@ -45,22 +45,22 @@ public class soapDevInteg implements soapDevIntegrations {
                             requestExecutionMethods.updateSoldDeviceStatus(bindingDeviceUID, dArgs.userLog, "CONNECTED");
                         }
                     } else if (dArgs.devStatus.equals("CONNECTED")){
-                        linkResultValue = "DEVICE_"+bindingDeviceUID+"_IS_ALREADY_IN_USE";
+                        linkResultValue = "ERROR_DEVICE_"+bindingDeviceUID+"_IS_ALREADY_IN_USE";
                     } else {
-                        linkResultValue = "DEVICE_"+bindingDeviceUID+"_NOT_IN_PERSONAL_ACCOUNT";
+                        linkResultValue = "ERROR_DEVICE_"+bindingDeviceUID+"_NOT_IN_PERSONAL_ACCOUNT";
                     }
 
                 } else {
-                    linkResultValue = "NOT_FOUND_DEVICES: " + notFoundDevices;
+                    linkResultValue = "ERROR_NOT_FOUND_DEVICES: " + notFoundDevices;
                 }
             } else {
-                linkResultValue = "CANT_PARSE_CHAIN";
+                linkResultValue = "ERROR_CANT_PARSE_CHAIN";
             }
 
             return linkResultValue;
         } catch (Exception e){
             e.printStackTrace();
-            return "EXECUTION_ERROR";
+            return "ERROR_EXECUTION_FAILED";
         }
 
     }

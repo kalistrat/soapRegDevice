@@ -40,10 +40,10 @@ public class soapDevInteg implements soapDevIntegrations {
                             ){
                         linkResultValue = requestExecutionMethods.userWsLinkDevice(UID_CHAIN,dArgs);
                         //System.out.println("linkResultValue from userWs: " + linkResultValue);
-                        if (!linkResultValue.contains("ERROR")) {
-                            //System.out.println("go to connected");
-                            requestExecutionMethods.updateSoldDeviceStatus(bindingDeviceUID, dArgs.userLog, "CONNECTED");
-                        }
+//                        if (!linkResultValue.contains("ERROR")) {
+//                            //System.out.println("go to connected");
+//                            requestExecutionMethods.updateSoldDeviceStatus(bindingDeviceUID, dArgs.userLog, "CONNECTED");
+//                        }
                     } else if (dArgs.devStatus.equals("CONNECTED")){
                         linkResultValue = "ERROR_DEVICE_"+bindingDeviceUID+"_IS_ALREADY_IN_USE";
                     } else {
@@ -90,6 +90,11 @@ public class soapDevInteg implements soapDevIntegrations {
 
                         requestExecutionMethods.updateSoldDeviceStatus(UID, userLogin, "OUTSIDE");
                         setResultValue = "DEVICE_TRANSFERRED_TO_OUTSIDE_STATUS";
+
+                    } else if(uidStatus.equals("AWAINTING")&& reqStatus.equals("CONNECTED")) {
+
+                        requestExecutionMethods.updateSoldDeviceStatus(UID, userLogin, "CONNECTED");
+                        setResultValue = "DEVICE_TRANSFERRED_TO_CONNECTED_STATUS";
 
                     } else {
                         setResultValue = "WRONG_DEVICE_TRANSITION";

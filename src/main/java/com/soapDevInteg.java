@@ -46,6 +46,8 @@ public class soapDevInteg implements soapDevIntegrations {
 //                        }
                     } else if (dArgs.devStatus.equals("CONNECTED")){
                         linkResultValue = "ERROR_DEVICE_"+bindingDeviceUID+"_IS_ALREADY_IN_USE";
+                    } else if (dArgs.devStatus.equals("DELETED")){
+                        linkResultValue = "ERROR_DEVICE_"+bindingDeviceUID+"_HAS_ALREADY_BEEN_DELETED";
                     } else {
                         linkResultValue = "ERROR_DEVICE_"+bindingDeviceUID+"_NOT_IN_PERSONAL_ACCOUNT";
                     }
